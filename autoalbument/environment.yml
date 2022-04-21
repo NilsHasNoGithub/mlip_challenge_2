@@ -1,0 +1,39 @@
+name: mlip_challenge_2_autoalbum
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.7
+  - matplotlib
+  - ipykernel
+  - ipywidgets
+  - numpy
+  - scikit-learn
+  - albumentations
+  - pillow
+  - scipy
+  - pip
+  - pip:
+    - kaggle
+    - tqdm
+    - ray
+    - joblib
+    - timm
+    - click
+    - mlflow
+    - pyyaml
+    - pytorch-lightning
+    - pytest
+    - opencv-python
+    - cameratransform
+    - fairscale
+    - deepspeed
+    - sqlalchemy
+    - 'git+https://github.com/NilsHasNoGithub/nils-utils.git'
+    - icecream
+    - autoalbument
+    - '--extra-index-url https://download.pytorch.org/whl/cu113'
+    - torch
+    - torchvision
+    - torchaudio

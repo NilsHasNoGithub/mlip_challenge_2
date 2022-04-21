@@ -1,0 +1,11 @@
+base:
+  model_type: resnet34
+  num_epochs: 30
+  optimizer: AdamW
+  lr: 1.0e-03
+  weight_decay: 1.0e-08
+  batch_size: 64
+  augmentation_preset: default
+  gradient_accumulation: 2
+# deltas:
+#   - augmentation_preset: random_crop

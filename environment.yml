@@ -1,0 +1,38 @@
+name: mlip_challenge_2
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.8.12
+  - cudatoolkit=11.3
+  - pytorch=1.11.0
+  - torchvision=0.12.0
+  - matplotlib
+  - ipykernel
+  - ipywidgets
+  - numpy
+  - scikit-learn
+  - albumentations
+  - pillow
+  - scipy
+  - pip
+  - pip:
+    - kaggle
+    - tqdm
+    - ray
+    - joblib
+    - timm
+    - click
+    - mlflow
+    - pyyaml
+    - pytorch-lightning
+    - pytest
+    - opencv-python
+    - cameratransform
+    - fairscale
+    - deepspeed
+    - sqlalchemy
+    - 'git+https://github.com/NilsHasNoGithub/nils-utils.git'
+    - icecream
+    # - autoalbument
