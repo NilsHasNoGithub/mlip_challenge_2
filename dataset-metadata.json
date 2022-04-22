@@ -1,0 +1,12 @@
+{
+  "title": "Project data for FGVC9",
+  "id": "nilsgolembiewski/FGVC9-project-data",
+  "licenses": [
+    {
+      "name": "CC0-1.0"
+    }
+  ],
+  "exclude": [
+    "data"
+  ]
+}

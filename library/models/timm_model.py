@@ -21,7 +21,8 @@ class TimmModule(pl.LightningModule):
         optimizer: str,
         learning_rate: float,
         weight_decay: float,
-        extra_model_params: Optional[Dict[str, Any]] = None
+        extra_model_params: Optional[Dict[str, Any]] = None,
+        pretrained=True,
     ) -> None:
         super().__init__()
 
@@ -30,10 +31,15 @@ class TimmModule(pl.LightningModule):
         self._optimizer = optimizer
         self._learning_rate = learning_rate
         self._weight_decay = weight_decay
-        self._extra_model_params = extra_model_params if extra_model_params is not None else dict()
+        self._extra_model_params = (
+            extra_model_params if extra_model_params is not None else dict()
+        )
 
         self.model = timm.create_model(
-            self._model_name, pretrained=True, num_classes=self._n_classes, **self._extra_model_params
+            self._model_name,
+            pretrained=pretrained,
+            num_classes=self._n_classes,
+            **self._extra_model_params
         )
 
         self.loss_fn = F.cross_entropy
@@ -84,6 +90,17 @@ class TimmModule(pl.LightningModule):
         self.log("val_loss", val_loss)
         self.log("val_acc", val_acc)
         self.log("val_map5", val_map5)
+
+        top_5 = torch.topk(predictions, 5).indices
+
+        with open(".cache/val_preds", "w") as f:
+            for i in range(top_5.shape[0]):
+                f.write(f"{labels[i]}\t")
+                for j in range(top_5.shape[1]):
+                    f.write(f"{top_5[i, j]} ")
+                f.write("\n")
+                
+
 
     def configure_optimizers(self):
 

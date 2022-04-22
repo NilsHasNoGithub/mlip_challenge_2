@@ -17,6 +17,7 @@ dependencies:
   - pillow
   - scipy
   - pip
+  - pandas
   - pip:
     - kaggle
     - tqdm
@@ -28,7 +29,6 @@ dependencies:
     - pyyaml
     - pytorch-lightning
     - pytest
-    - opencv-python
     - cameratransform
     - fairscale
     - deepspeed

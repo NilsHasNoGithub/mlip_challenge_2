@@ -1,11 +1,12 @@
 import io
 from optparse import Option
+import os
 from typing import Any, Dict, List, Optional
 import numpy as np
 import torch
 from torch.utils.data.dataset import Dataset
 
-from ..exp_config import MaskPos, TrainMetadata, ExpConfig
+from ..config import MaskPos, TrainMetadata, ExpConfig
 from .utils import paths_to_labels, read_img, apply_mask
 import pytorch_lightning as pl
 import random
@@ -25,15 +26,19 @@ class HotelDataSet(Dataset):
             transforms.Compose
         ] = None,  # applied after augmentations
         mask_positions: Optional[List[MaskPos]] = None,
+        include_file_name: bool = False,
+        is_eval: bool = False,
     ) -> None:
         super().__init__()
 
         self._img_paths = image_paths
 
-        self._txt_labels = paths_to_labels(image_paths)
+        self._txt_labels = paths_to_labels(image_paths) if not is_eval else ["0" for _ in range(len(image_paths))]
         self._mask_positions = mask_positions
+        self._include_file_name = include_file_name
+        self._is_eval = is_eval
 
-        self._labels = [label_encoder[l] for l in self._txt_labels]
+        self._labels = [label_encoder[l] for l in self._txt_labels] if not is_eval else [0 for _ in self._txt_labels]
 
         self._augmentation_pipeline = (
             augmentation_pipeline
@@ -55,11 +60,15 @@ class HotelDataSet(Dataset):
 
         # TODO apply data augmentation (before mask)
         img = self._augmentation_pipeline(image=img)["image"]
-        img = self._image_transforms(pil_img.fromarray(img))
 
         if self._mask_positions is not None:
             msk = random.choice(self._mask_positions)
             img = apply_mask(img, msk)
+
+        img = self._image_transforms(pil_img.fromarray(img))
+
+        if self._include_file_name:
+            return img, lbl, os.path.split(img_path)[1]
 
         return img, lbl
 

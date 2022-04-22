@@ -4,7 +4,7 @@ from tqdm import tqdm
 import yaml
 import click
 from library.data import utils
-from library.exp_config import MaskPos, TrainMetadata
+from library.config import MaskPos, TrainMetadata
 import os
 from sklearn.model_selection import train_test_split
 import numpy as np

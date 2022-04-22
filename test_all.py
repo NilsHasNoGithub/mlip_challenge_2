@@ -4,7 +4,7 @@ from library.metric import mean_average_precision
 from library.data.utils import apply_mask, get_train_img_paths, get_mask_img_paths
 import random
 import os
-from library.exp_config import TrainMetadata
+from library.config import TrainMetadata
 from library.data import dataset
 import cv2
 

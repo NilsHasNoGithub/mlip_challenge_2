@@ -133,3 +133,5 @@ dmypy.json
 .vscode
 /scripts
 /mlruns
+/models
+/kaggle_data

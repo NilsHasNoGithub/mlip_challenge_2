@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import MLFlowLogger
 import torch
 from library.data.dataset import HotelLightningModule
-from library.exp_config import ExpConfig, TrainMetadata
+from library.config import ExpConfig, TrainMetadata
 import click
 from library.models.timm_model import TimmModule
 from library.data import augmentations
@@ -96,7 +96,7 @@ def main(
         model_dir = os.path.join("models", unique_str)
         os.makedirs(model_dir, exist_ok=True)
         logger.experiment.log_param(logger.run_id, "model_dir", model_dir)
-        pattern = "epoch-{epoch:04d}_val-loss-{val_loss:.4f}"
+        pattern = "epoch-{epoch:04d}_val-map5-{val_map5:.4f}"
         ModelCheckpoint.CHECKPOINT_NAME_LAST = pattern + ".last"
         checkpointers = []
         for metr in ["val_map5"]:
@@ -107,6 +107,7 @@ def main(
                 save_last=True,
                 auto_insert_metric_name=False,
                 save_top_k=3,
+                mode="max"
             )
             checkpointers.append(checkpointer)
 

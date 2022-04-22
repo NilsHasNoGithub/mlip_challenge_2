@@ -8,7 +8,7 @@ import yaml
 from collections import defaultdict
 import numpy as np
 from PIL import Image as pil_image
-from ..exp_config import MaskPos
+from ..config import MaskPos
 
 
 def paths_to_labels(paths: List[str]) -> List[str]:
@@ -48,26 +48,27 @@ def class_counts(labels) -> Dict[Any, int]:
 
 def get_train_img_paths(train_img_folder: str) -> List[str]:
     return list(
-        map(os.path.abspath, glob.glob(os.path.join(train_img_folder, "*/*.jpg")))
+        glob.glob(os.path.join(train_img_folder, "*/*.jpg"))
     )
 
 
 def get_mask_img_paths(mask_img_folder: str) -> List[str]:
-    return list(map(os.path.abspath, glob.glob(os.path.join(mask_img_folder, "*.png"))))
+    return list(glob.glob(os.path.join(mask_img_folder, "*.png")))
 
 
 def apply_mask(
-    img: torch.Tensor, mask: MaskPos, fill_value=(1.0, 0.0, 0.0)
+    img: np.ndarray, mask: MaskPos, fill_value=(255, 0.0, 0.0)
 ) -> np.ndarray:
     """
     Overlay mask over 3d img
     """
-    result = img.clone()
+    # result = img.clone()
+    result = img.copy()
 
     l, t, w, h = mask.to_indices(img.shape[1], img.shape[0])
 
     for i in range(len(fill_value)):
-        result[i, t : t + h, l : l + w] = fill_value[i]
+        result[t : t + h, l : l + w, i] = fill_value[i]
 
     return result
 
