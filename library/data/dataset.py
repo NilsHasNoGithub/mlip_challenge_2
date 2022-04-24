@@ -96,14 +96,14 @@ class HotelLightningModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None) -> None:
         md = self._train_metadata
         self._train_ds = HotelDataSet(
-            md.train_imgs,
+            md.images[md.train_idxs],
             md.label_encoder,
             mask_positions=md.mask_positions,
             augmentation_pipeline=self._augmentation_pipeline,
             image_transforms=self._transform,
         )
         self._val_ds = HotelDataSet(
-            md.val_imgs,
+            md.images[md.val_idxs],
             md.label_encoder,
             mask_positions=md.mask_positions,
             augmentation_pipeline=self._val_augmentation_pipeline,

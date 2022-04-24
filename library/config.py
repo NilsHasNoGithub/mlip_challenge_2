@@ -33,16 +33,17 @@ class MaskPos:
 class TrainMetadata:
     label_encoder: Dict[str, int]
     label_decoder: Dict[int, str]
-    train_imgs: List[str]
-    val_imgs: List[str]
+    images: List[str]
+    train_idxs: List[str]
+    val_idxs: List[str]
     mask_positions: List[MaskPos]
 
     def to_yaml(self, file_path) -> None:
         metadata = {
             "label_encoder": self.label_encoder,
             "label_decoder": self.label_decoder,
-            "train_imgs": self.train_imgs,
-            "val_imgs": self.val_imgs,
+            "train_idxs": self.train_idxs,
+            "val_idxs": self.val_idxs,
             "mask_positions": [mp._values() for mp in self.mask_positions],
         }
 
@@ -59,8 +60,8 @@ class TrainMetadata:
         return TrainMetadata(
             label_encoder=metadata["label_encoder"],
             label_decoder=metadata["label_decoder"],
-            train_imgs=metadata["train_imgs"],
-            val_imgs=metadata["val_imgs"],
+            train_idxs=metadata["train_idxs"],
+            val_idxs=metadata["val_idxs"],
             mask_positions=[MaskPos(*vs) for vs in metadata["mask_positions"]],
         )
 

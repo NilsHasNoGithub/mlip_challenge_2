@@ -35,7 +35,7 @@ def make_predictions(
 
     dataset = HotelDataSet(
         img_paths,
-        # train_metadata.val_imgs,
+        # train_metadata.images[train_metadata.val_idxs],
         train_metadata.label_encoder,
         augmentation_pipeline=augmentations.VAL_PRESETS[config.val_augmentation_preset],
         image_transforms=model.get_transform(),

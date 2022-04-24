@@ -69,16 +69,19 @@ def main(data_folder, output_file):
         all_train_imgs.append(all_train_imgs[idx])
         labels.append(labels[idx])
 
-    train_imgs, val_imgs = train_test_split(
-        all_train_imgs, test_size=0.1, stratify=labels, random_state=42
+    train_idxs, val_idxs = train_test_split(
+        list(range(len(all_train_imgs))), test_size=0.1, stratify=labels, random_state=42
     )
+
+    assert isinstance(train_idxs, list)
+    assert isinstance(val_idxs, list)
 
     mask_positions = Parallel(n_jobs=-1)(
         delayed(extr_mask_position)(m) for m in tqdm(all_mask_imgs)
     )
 
     metadata = TrainMetadata(
-        label_encoder, label_decoder, train_imgs, val_imgs, mask_positions
+        label_encoder, label_decoder, all_train_imgs, train_idxs, val_idxs, mask_positions
     )
 
     metadata.to_yaml(output_file)
