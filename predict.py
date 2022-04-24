@@ -25,20 +25,21 @@ def make_predictions(
     config: InferenceConfig = InferenceConfig.from_yaml_file(inference_config_file)
     train_metadata = TrainMetadata.from_yaml(train_metadata_file)
 
-    # model = TimmModule.load_from_checkpoint(config.model_path, pretrained=False)
-    model = torch.load(config.model_path)
+    model = TimmModule.load_from_checkpoint(config.model_path, pretrained=False)
+    # model: TimmModule = torch.load(config.model_path)
     # with open(config.model_path, "rb") as f:
     #     model = pickle.load(f)
 
-    img_paths = glob.glob(os.path.join(test_dir, "*.jpg"), recursive=True)
+    img_paths = glob.glob(os.path.join(test_dir, "**/*.jpg"), recursive=True)
+    # print(img_paths)
 
     dataset = HotelDataSet(
-        # img_paths,
-        train_metadata.val_imgs,
+        img_paths,
+        # train_metadata.val_imgs,
         train_metadata.label_encoder,
         augmentation_pipeline=augmentations.VAL_PRESETS[config.val_augmentation_preset],
         image_transforms=model.get_transform(),
-        # is_eval=True,
+        is_eval=True,
         include_file_name=True
     )
 
@@ -49,10 +50,9 @@ def make_predictions(
     model = model.to(device)
 
     result = defaultdict(list)
-    labels = []
-    all_preds = []
+    # labels = []
+    # all_preds = []
 
-    i2 = 0
     for inputs, lbl, paths in tqdm(DataLoader(dataset, batch_size=config.batch_size, num_workers=num_workers)):
         inputs = inputs.to(device)
         predictions = model.forward(inputs)
@@ -68,17 +68,13 @@ def make_predictions(
                 top_5_hotel_ids.append(train_metadata.label_decoder[top_5[j].item()])
 
             result["hotel_id"].append(" ".join(top_5_hotel_ids))
-            all_preds.append(predictions[i, :].detach().cpu())
-            labels.append(lbl[i].detach().cpu())
+            # all_preds.append(predictions[i, :].detach().cpu())
+            # labels.append(lbl[i].detach().cpu())
 
-        if i2 > 10:
-            break
-        i2 += 1
+    # all_preds = torch.stack(all_preds)
+    # labels = torch.stack(labels)
 
-    all_preds = torch.stack(all_preds)
-    labels = torch.stack(labels)
-
-    print(f"map5: {mean_average_precision(all_preds.numpy(), labels.numpy())}")
+    # print(f"map5: {mean_average_precision(all_preds.numpy(), labels.numpy())}")
 
     result_df = pd.DataFrame.from_dict(result)
     result_df.to_csv(out_file, index=False)

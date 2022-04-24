@@ -1,3 +1,3 @@
-model_path: models/effnet1.pth
+model_path: models/effnet1.ckpt
 batch_size: 4
 val_augmentation_preset: default

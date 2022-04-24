@@ -67,6 +67,9 @@ def main(
 
         print(f"Running experiment:\n{exp_config}")
 
+        
+
+
         model = TimmModule(
             exp_config.model_type,
             n_classes=n_classes,
@@ -92,6 +95,9 @@ def main(
 
         logger = MLFlowLogger(experiment_name=exp_config.experiment_name)
         unique_str = logger.run_id[:10]
+
+        for k, v in vars(exp_config).items():
+            logger.experiment.log_param(logger.run_id, f"{k}__", v)
 
         model_dir = os.path.join("models", unique_str)
         os.makedirs(model_dir, exist_ok=True)
@@ -125,7 +131,7 @@ def main(
             #     cpu_checkpointing=True,
             # ),
             # strategy="ddp_sharded",
-            strategy="ddp_fully_sharded" if multi_gpu else None,
+            # strategy="ddp_fully_sharded" if multi_gpu else None,
             auto_select_gpus=True,
             accumulate_grad_batches=exp_config.gradient_accumulation,
         )

@@ -12,4 +12,4 @@ base:
   extra_model_params:
     drop_rate: 0.25
 deltas:
-  - augmentation_preset: default
+  - augmentation_preset: flip_rot

@@ -62,6 +62,6 @@ DEFAULT = [
 ]
 
 
-PRESETS = {"default": A.Compose(DEFAULT), "no_aug": A.Compose(DEFAULT[:2])}
+PRESETS = {"default": A.Compose(DEFAULT), "no_aug": A.Compose(DEFAULT[:2]), "flip_rot": A.Compose(DEFAULT[:5])}
 
 VAL_PRESETS = {"default": A.Compose(DEFAULT[:2])}

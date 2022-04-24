@@ -1,10 +1,11 @@
 base:
   model_type: swin_small_patch4_window7_224
   optimizer: "AdamW"
-  lr: 1.0e-05
+  num_epochs: 50
+  learning_rate: 1.0e-05
   weight_decay: 1.0e-08
   batch_size: 16
   gradient_accumulation: 16
-  augmentatopm_preset: default
+  augmentation_preset: no_aug
 deltas:
-  - augmentation_preset: random_crop0
+  - augmentation_preset: flip_only
