@@ -18,6 +18,7 @@ def test_ga_pool():
     assert tuple(GlobalAveragePool2D(start_dim=1, end_dim=2)(i).shape) == (2, 5)
     assert tuple(GlobalAveragePool2D(start_dim=-3, end_dim=-2)(i).shape) == (2, 5)
 
+
 # def test_dataset():
 #     train_metadata = TrainMetadata.from_yaml(TRAIN_METADATA_FILE)
 #     ds = dataset.HotelDataSet(

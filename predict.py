@@ -19,8 +19,14 @@ from tqdm import tqdm
 from icecream import ic
 import pickle
 
+
 def make_predictions(
-    test_dir: str, inference_config_file: str, train_metadata_file: str, out_file: str, num_workers=multiprocessing.cpu_count(), device = None,
+    test_dir: str,
+    inference_config_file: str,
+    train_metadata_file: str,
+    out_file: str,
+    num_workers=multiprocessing.cpu_count(),
+    device=None,
 ):
     config: InferenceConfig = InferenceConfig.from_yaml_file(inference_config_file)
     train_metadata = TrainMetadata.from_yaml(train_metadata_file)
@@ -40,7 +46,7 @@ def make_predictions(
         augmentation_pipeline=augmentations.VAL_PRESETS[config.val_augmentation_preset],
         image_transforms=model.get_transform(),
         is_eval=True,
-        include_file_name=True
+        include_file_name=True,
     )
 
     if device is None:
@@ -53,11 +59,12 @@ def make_predictions(
     # labels = []
     # all_preds = []
 
-    for inputs, lbl, paths in tqdm(DataLoader(dataset, batch_size=config.batch_size, num_workers=num_workers)):
+    for inputs, lbl, paths in tqdm(
+        DataLoader(dataset, batch_size=config.batch_size, num_workers=num_workers)
+    ):
         inputs = inputs.to(device)
         predictions = model.forward(inputs)
 
-        
         for i in range(predictions.shape[0]):
             top_5 = torch.topk(predictions[i, :], 5, largest=True).indices.cpu()
             # top_5_np = np.argsort(predictions[i, :].cpu().detach().numpy())[-5:][::-1]
@@ -85,7 +92,7 @@ def make_predictions(
 @click.option("--config-file", "-c", type=click.Path(exists=True))
 @click.option("--train-metadata", "-t", type=click.Path(exists=True))
 @click.option("--out-file", "-o", type=click.Path())
-@click.option("--num-workers", "-j", type=int, default=multiprocessing.cpu_count()//2)
+@click.option("--num-workers", "-j", type=int, default=multiprocessing.cpu_count() // 2)
 @click.option("--device", type=str, default=None)
 def main(
     test_dir: str,
@@ -93,9 +100,16 @@ def main(
     train_metadata: str,
     out_file: str,
     num_workers: int,
-    device: Optional[str]
+    device: Optional[str],
 ):
-    make_predictions(test_dir, config_file, train_metadata, out_file, num_workers=num_workers, device=device)
+    make_predictions(
+        test_dir,
+        config_file,
+        train_metadata,
+        out_file,
+        num_workers=num_workers,
+        device=device,
+    )
 
 
 if __name__ == "__main__":

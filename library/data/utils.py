@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 import glob
 import os
 from dataclasses import dataclass
@@ -47,9 +47,7 @@ def class_counts(labels) -> Dict[Any, int]:
 
 
 def get_train_img_paths(train_img_folder: str) -> List[str]:
-    return list(
-        glob.glob(os.path.join(train_img_folder, "*/*.jpg"))
-    )
+    return list(glob.glob(os.path.join(train_img_folder, "*/*.jpg")))
 
 
 def get_mask_img_paths(mask_img_folder: str) -> List[str]:
@@ -77,3 +75,7 @@ def read_img(img_path: str) -> np.ndarray:
     img = np.array(pil_image.open(img_path).convert("RGB"))
 
     return img
+
+
+def list_index(l: list, idxs: Iterable) -> list:
+    return [l[i] for i in idxs]

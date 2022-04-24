@@ -1,5 +1,6 @@
 from genericpath import exists
 import os
+import pathlib
 from typing import List
 import mlflow
 import pytorch_lightning as pl
@@ -67,8 +68,28 @@ def main(
 
         print(f"Running experiment:\n{exp_config}")
 
-        
+        logger = MLFlowLogger(experiment_name=exp_config.experiment_name)
+        unique_str = logger.run_id[:10]
 
+        for k, v in vars(exp_config).items():
+            logger.experiment.log_param(logger.run_id, f"{k}__", v)
+
+        exts_to_bup = [".py", ".zsh", ".bash", ".sh", ".yml", ".yaml"]
+        files_to_bup = []
+
+        for ext in exts_to_bup:
+            files_to_bup.extend(pathlib.Path.cwd().glob(f"**/*{ext}"))
+
+        for file in files_to_bup:
+            file_rel = file.relative_to(pathlib.Path.cwd())
+
+            # prevent recursion
+            if str(file_rel).startswith("mlruns/"):
+                continue
+
+            logger.experiment.log_artifact(
+                logger.run_id, str(file), str(pathlib.Path("code") / file_rel.parent)
+            )
 
         model = TimmModule(
             exp_config.model_type,
@@ -93,12 +114,6 @@ def main(
             transform=transform,
         )
 
-        logger = MLFlowLogger(experiment_name=exp_config.experiment_name)
-        unique_str = logger.run_id[:10]
-
-        for k, v in vars(exp_config).items():
-            logger.experiment.log_param(logger.run_id, f"{k}__", v)
-
         model_dir = os.path.join("models", unique_str)
         os.makedirs(model_dir, exist_ok=True)
         logger.experiment.log_param(logger.run_id, "model_dir", model_dir)
@@ -113,7 +128,7 @@ def main(
                 save_last=True,
                 auto_insert_metric_name=False,
                 save_top_k=3,
-                mode="max"
+                mode="max",
             )
             checkpointers.append(checkpointer)
 

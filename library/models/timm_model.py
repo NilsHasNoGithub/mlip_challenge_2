@@ -5,6 +5,7 @@ import timm.optim
 import torch.optim
 import torch
 from torch.nn import functional as F
+import torch.nn as nn
 from sklearn.metrics import accuracy_score
 
 from timm.data import resolve_data_config
@@ -23,6 +24,7 @@ class TimmModule(pl.LightningModule):
         weight_decay: float,
         extra_model_params: Optional[Dict[str, Any]] = None,
         pretrained=True,
+        head_drop_rate: float = 0.25,
     ) -> None:
         super().__init__()
 
@@ -38,8 +40,13 @@ class TimmModule(pl.LightningModule):
         self.model = timm.create_model(
             self._model_name,
             pretrained=pretrained,
-            num_classes=self._n_classes,
+            num_classes=0,
             **self._extra_model_params
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=head_drop_rate),
+            nn.Linear(self.model.num_features, self._n_classes),
         )
 
         self.loss_fn = F.cross_entropy
@@ -52,8 +59,13 @@ class TimmModule(pl.LightningModule):
 
         return transform
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward_features(self, x: torch.Tensor):
         return self.model(x)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.model(x)
+        x = self.classifier(x)
+        return x
 
     def training_step(self, batch, *_) -> Dict:
 
@@ -63,6 +75,7 @@ class TimmModule(pl.LightningModule):
 
         loss = self.loss_fn(predictions, labels)
         self.log("loss", loss)
+
         return {"loss": loss}
 
     def validation_step(self, batch, *_) -> Dict:
@@ -91,16 +104,14 @@ class TimmModule(pl.LightningModule):
         self.log("val_acc", val_acc)
         self.log("val_map5", val_map5)
 
-        top_5 = torch.topk(predictions, 5).indices
+        # top_5 = torch.topk(predictions, 5).indices
 
-        with open(".cache/val_preds", "w") as f:
-            for i in range(top_5.shape[0]):
-                f.write(f"{labels[i]}\t")
-                for j in range(top_5.shape[1]):
-                    f.write(f"{top_5[i, j]} ")
-                f.write("\n")
-                
-
+        # with open(".cache/val_preds", "w") as f:
+        #     for i in range(top_5.shape[0]):
+        #         f.write(f"{labels[i]}\t")
+        #         for j in range(top_5.shape[1]):
+        #             f.write(f"{top_5[i, j]} ")
+        #         f.write("\n")
 
     def configure_optimizers(self):
 

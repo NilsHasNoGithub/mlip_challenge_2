@@ -70,7 +70,10 @@ def main(data_folder, output_file):
         labels.append(labels[idx])
 
     train_idxs, val_idxs = train_test_split(
-        list(range(len(all_train_imgs))), test_size=0.1, stratify=labels, random_state=42
+        list(range(len(all_train_imgs))),
+        test_size=0.1,
+        stratify=labels,
+        random_state=42,
     )
 
     assert isinstance(train_idxs, list)
@@ -81,7 +84,12 @@ def main(data_folder, output_file):
     )
 
     metadata = TrainMetadata(
-        label_encoder, label_decoder, all_train_imgs, train_idxs, val_idxs, mask_positions
+        label_encoder,
+        label_decoder,
+        all_train_imgs,
+        train_idxs,
+        val_idxs,
+        mask_positions,
     )
 
     metadata.to_yaml(output_file)

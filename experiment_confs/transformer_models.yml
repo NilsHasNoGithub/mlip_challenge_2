@@ -8,4 +8,4 @@ base:
   gradient_accumulation: 16
   augmentation_preset: no_aug
 deltas:
-  - augmentation_preset: flip_only
+  - augmentation_preset: flip_rot

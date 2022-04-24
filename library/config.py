@@ -42,6 +42,7 @@ class TrainMetadata:
         metadata = {
             "label_encoder": self.label_encoder,
             "label_decoder": self.label_decoder,
+            "images": self.images,
             "train_idxs": self.train_idxs,
             "val_idxs": self.val_idxs,
             "mask_positions": [mp._values() for mp in self.mask_positions],
@@ -60,6 +61,7 @@ class TrainMetadata:
         return TrainMetadata(
             label_encoder=metadata["label_encoder"],
             label_decoder=metadata["label_decoder"],
+            images=metadata["images"],
             train_idxs=metadata["train_idxs"],
             val_idxs=metadata["val_idxs"],
             mask_positions=[MaskPos(*vs) for vs in metadata["mask_positions"]],

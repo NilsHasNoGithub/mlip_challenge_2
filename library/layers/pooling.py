@@ -3,7 +3,6 @@ import torch.nn as nn
 
 
 class GlobalAveragePool2D(nn.Module):
-
     def __init__(self, start_dim=-2, end_dim=-1) -> None:
         super().__init__()
         self.start_dim = start_dim
