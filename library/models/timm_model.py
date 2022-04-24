@@ -116,7 +116,7 @@ class TimmModule(pl.LightningModule):
     def configure_optimizers(self):
 
         optimizer = timm.optim.create_optimizer_v2(
-            self.model,
+            self.parameters(),
             opt=self._optimizer,
             lr=self._learning_rate,
             weight_decay=self._weight_decay,
