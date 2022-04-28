@@ -93,12 +93,12 @@ class TimmModule(pl.LightningModule):
 
         top_5 = torch.topk(predictions, 5).indices
 
-        with open(".cache/val_preds", "w") as f:
-            for i in range(top_5.shape[0]):
-                f.write(f"{labels[i]}\t")
-                for j in range(top_5.shape[1]):
-                    f.write(f"{top_5[i, j]} ")
-                f.write("\n")
+        # with open(".cache/val_preds", "w") as f:
+        #     for i in range(top_5.shape[0]):
+        #         f.write(f"{labels[i]}\t")
+        #         for j in range(top_5.shape[1]):
+        #             f.write(f"{top_5[i, j]} ")
+        #         f.write("\n")
                 
 
 
