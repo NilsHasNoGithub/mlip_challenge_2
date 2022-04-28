@@ -91,7 +91,7 @@ class TimmModule(pl.LightningModule):
         self.log("val_acc", val_acc)
         self.log("val_map5", val_map5)
 
-        top_5 = torch.topk(predictions, 5).indices
+        # top_5 = torch.topk(predictions, 5).indices
 
         # with open(".cache/val_preds", "w") as f:
         #     for i in range(top_5.shape[0]):
