@@ -14,6 +14,7 @@ import albumentations
 from torchvision import transforms
 from torch.utils.data.dataloader import DataLoader
 from PIL import Image as pil_img
+import warnings
 
 
 class HotelDataSet(Dataset):
@@ -37,6 +38,9 @@ class HotelDataSet(Dataset):
 
         self._txt_labels = txt_labels
         self._mask_positions = mask_positions
+
+        assert mask_positions is None or len(mask_positions) > 0, "mask positions can not be empty"
+
         self._include_file_name = include_file_name
         self._is_eval = is_eval
         self._is_hotels_50k = is_hotels_50k

@@ -20,12 +20,13 @@ dependencies:
   - pip
   - pandas
   - pytorch-lightning
-  - fairscale
   - seaborn
+  - fairscale
   - py-xgboost
   - h2o
   - pip:
     - kaggle
+    - deepspeed
     - tqdm
     - ray
     - joblib
@@ -35,7 +36,6 @@ dependencies:
     - pyyaml
     - pytest
     - cameratransform
-    - deepspeed
     - sqlalchemy
     - 'git+https://github.com/NilsHasNoGithub/nils-utils.git'
     - icecream
