@@ -34,6 +34,7 @@ class TrainMetadata:
     label_encoder: Dict[str, int]
     label_decoder: Dict[int, str]
     images: List[str]
+    txt_labels: List[str]
     train_idxs: List[str]
     val_idxs: List[str]
     mask_positions: List[MaskPos]
@@ -43,6 +44,7 @@ class TrainMetadata:
             "label_encoder": self.label_encoder,
             "label_decoder": self.label_decoder,
             "images": self.images,
+            "txt_labels": self.txt_labels,
             "train_idxs": self.train_idxs,
             "val_idxs": self.val_idxs,
             "mask_positions": [mp._values() for mp in self.mask_positions],
@@ -56,12 +58,13 @@ class TrainMetadata:
 
         with open(yaml_file, "r") as f:
 
-            metadata = yaml.load(f, Loader=yaml.FullLoader)
+            metadata = yaml.load(f, Loader=yaml.CLoader)
 
         return TrainMetadata(
             label_encoder=metadata["label_encoder"],
             label_decoder=metadata["label_decoder"],
             images=metadata["images"],
+            txt_labels=metadata["txt_labels"],
             train_idxs=metadata["train_idxs"],
             val_idxs=metadata["val_idxs"],
             mask_positions=[MaskPos(*vs) for vs in metadata["mask_positions"]],

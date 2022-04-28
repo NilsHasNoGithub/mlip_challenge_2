@@ -1,0 +1,16 @@
+base:
+  # model_type: tf_efficientnetv2_s_in21k
+  model_type: tf_efficientnetv2_l_in21k
+  experiment_name: pretraining
+  num_epochs: 300
+  optimizer: AdamW
+  learning_rate: 1.0e-03
+  weight_decay: 1.0e-06
+  batch_size: 8
+  # augmentation_preset: default
+  augmentation_preset: happy_whale_4th
+  gradient_accumulation: 32
+  extra_model_params:
+    drop_rate: 0.25
+deltas:
+  - augmentation_preset: flip_rot

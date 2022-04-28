@@ -15,6 +15,7 @@ from pytorch_lightning.strategies.deepspeed import DeepSpeedStrategy
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import multiprocessing
 import random
+from icecream import ic
 
 
 # def random_str(l=10) ->
@@ -30,9 +31,6 @@ def unique_str(l=10) -> str:
     "-t",
     type=click.Path(exists=True),
     help="Path to train metadata file",
-)
-@click.option(
-    "--data-dir", "-d", type=click.Path(exists=True), help="Path to data folder"
 )
 @click.option(
     "--experiment-conf",
@@ -51,7 +49,6 @@ def unique_str(l=10) -> str:
 )
 def main(
     train_metadata: str,
-    data_dir: str,
     experiment_conf: str,
     num_dl_workers: int,
     multi_gpu: bool,
@@ -100,10 +97,9 @@ def main(
             extra_model_params=exp_config.extra_model_params,
         )
 
-        transform = model.get_transform()
+        transform = ic(model.get_transform())
 
         data_module = HotelLightningModule(
-            data_dir,
             train_metadata,
             exp_config,
             num_dl_workers=num_dl_workers,

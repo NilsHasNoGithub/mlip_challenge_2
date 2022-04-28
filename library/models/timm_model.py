@@ -121,5 +121,7 @@ class TimmModule(pl.LightningModule):
             lr=self._learning_rate,
             weight_decay=self._weight_decay,
         )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 10)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, 10, eta_min=self._learning_rate * 1e-2
+        )
         return [optimizer], [scheduler]

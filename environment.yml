@@ -39,4 +39,5 @@ dependencies:
     - sqlalchemy
     - 'git+https://github.com/NilsHasNoGithub/nils-utils.git'
     - icecream
+    - plotly
     # - autoalbument
