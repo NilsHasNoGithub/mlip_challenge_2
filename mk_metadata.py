@@ -1,4 +1,8 @@
+from collections import defaultdict
+from email.policy import default
 from genericpath import exists
+import math
+from typing import Dict, List, Optional, Union
 from joblib import Parallel, delayed
 from tqdm import tqdm
 import yaml
@@ -10,6 +14,17 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from dataclasses import dataclass
 from PIL import Image as pil_img
+from dataclasses import dataclass
+
+
+@dataclass
+class DsResults:
+    images: List[str]
+    labels: List[str]
+    label_encoder: Dict[str, int]
+    label_decoder: Dict[int, str]
+    train_idxs: List[int]
+    val_idxs: List[int]
 
 
 def extr_mask_position(mask_path: str) -> MaskPos:
@@ -47,16 +62,28 @@ def extr_mask_position(mask_path: str) -> MaskPos:
     return MaskPos(left, top, right - left, bottom - top)
 
 
-@click.command()
-@click.option("--data-folder", "-d", type=click.Path(exists=True))
-@click.option("--output-file", "-o", type=click.Path())
-def main(data_folder, output_file):
-    all_train_imgs = utils.get_train_img_paths(
-        os.path.join(data_folder, "train_images")
+def process_ds_folder(
+    folder: str,
+    hotels_50k: bool,
+    min_sample_limit: int,
+    max_sample_limit: Union[int, float],
+) -> DsResults:
+    all_imgs = utils.get_train_img_paths(
+        os.path.join(folder, "train_images") if not hotels_50k else folder
     )
-    all_mask_imgs = utils.get_mask_img_paths(os.path.join(data_folder, "train_masks"))
 
-    labels = utils.paths_to_labels(all_train_imgs)
+    labels = utils.paths_to_labels(all_imgs, hotels_50k=hotels_50k)
+    label_counts = defaultdict(int)
+    for l in labels:
+        label_counts[l] += 1
+
+    remaining_idxs = [
+        i
+        for i, l in enumerate(labels)
+        if min_sample_limit <= label_counts[l] <= max_sample_limit
+    ]
+    all_imgs = utils.list_index(all_imgs, remaining_idxs)
+    labels = utils.list_index(labels, remaining_idxs)
 
     label_encoder, label_decoder = utils.make_label_map(labels)
     cls_counts = utils.class_counts(labels)
@@ -66,11 +93,60 @@ def main(data_folder, output_file):
     for cls_ in single_class_entries:
         idx = labels.index(cls_)
 
-        all_train_imgs.append(all_train_imgs[idx])
+        all_imgs.append(all_imgs[idx])
         labels.append(labels[idx])
 
-    train_imgs, val_imgs = train_test_split(
-        all_train_imgs, test_size=0.1, stratify=labels, random_state=42
+    train_idxs, val_idxs = train_test_split(
+        list(range(len(all_imgs))),
+        test_size=0.1,
+        stratify=labels,
+        random_state=42,
+    )
+
+    assert isinstance(train_idxs, list)
+    assert isinstance(val_idxs, list)
+
+    return DsResults(
+        images=all_imgs,
+        labels=labels,
+        label_encoder=label_encoder,
+        label_decoder=label_decoder,
+        train_idxs=train_idxs,
+        val_idxs=val_idxs,
+    )
+
+
+@click.command()
+@click.option("--data-folder", "-d", type=click.Path(exists=True))
+@click.option("--hotels-50k", is_flag=True, show_default=True, type=bool, default=False)
+@click.option("--mask-folder", "-m", default=None, type=click.Path(exists=True))
+@click.option("--output-file", "-o", type=click.Path())
+@click.option(
+    "--min-sample-limit",
+    type=int,
+    default=1,
+    help="Minimal amount of samples required for a class to be included",
+)
+@click.option(
+    "--max-sample-limit",
+    type=int,
+    default=math.inf,
+    help="Maximal amount of samples of a class for it to be included",
+)
+def main(
+    data_folder,
+    hotels_50k: bool,
+    mask_folder: Optional[str],
+    output_file,
+    min_sample_limit: int,
+    max_sample_limit: Union[int, float],
+):
+    all_mask_imgs = utils.get_mask_img_paths(
+        os.path.join(data_folder, "train_masks") if mask_folder is None else mask_folder
+    )
+
+    ds_results = process_ds_folder(
+        data_folder, hotels_50k, min_sample_limit, max_sample_limit
     )
 
     mask_positions = Parallel(n_jobs=-1)(
@@ -78,7 +154,13 @@ def main(data_folder, output_file):
     )
 
     metadata = TrainMetadata(
-        label_encoder, label_decoder, train_imgs, val_imgs, mask_positions
+        ds_results.label_encoder,
+        ds_results.label_decoder,
+        ds_results.images,
+        ds_results.labels,
+        ds_results.train_idxs,
+        ds_results.val_idxs,
+        mask_positions,
     )
 
     metadata.to_yaml(output_file)

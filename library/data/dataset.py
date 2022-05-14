@@ -7,19 +7,21 @@ import torch
 from torch.utils.data.dataset import Dataset
 
 from ..config import MaskPos, TrainMetadata, ExpConfig
-from .utils import paths_to_labels, read_img, apply_mask
+from .utils import list_index, paths_to_labels, read_img, apply_mask
 import pytorch_lightning as pl
 import random
 import albumentations
 from torchvision import transforms
 from torch.utils.data.dataloader import DataLoader
 from PIL import Image as pil_img
+import warnings
 
 
 class HotelDataSet(Dataset):
     def __init__(
         self,
         image_paths: List[str],
+        txt_labels: List[str],
         label_encoder: Dict[str, int],
         augmentation_pipeline: Optional[albumentations.Compose] = None,
         image_transforms: Optional[
@@ -28,17 +30,28 @@ class HotelDataSet(Dataset):
         mask_positions: Optional[List[MaskPos]] = None,
         include_file_name: bool = False,
         is_eval: bool = False,
+        is_hotels_50k: bool = False,
     ) -> None:
         super().__init__()
 
         self._img_paths = image_paths
 
-        self._txt_labels = paths_to_labels(image_paths) if not is_eval else ["0" for _ in range(len(image_paths))]
+        self._txt_labels = txt_labels
         self._mask_positions = mask_positions
+
+        assert (
+            mask_positions is None or len(mask_positions) > 0
+        ), "mask positions can not be empty"
+
         self._include_file_name = include_file_name
         self._is_eval = is_eval
+        self._is_hotels_50k = is_hotels_50k
 
-        self._labels = [label_encoder[l] for l in self._txt_labels] if not is_eval else [0 for _ in self._txt_labels]
+        self._labels = (
+            [label_encoder[l] for l in self._txt_labels]
+            if not is_eval
+            else [0 for _ in self._txt_labels]
+        )
 
         self._augmentation_pipeline = (
             augmentation_pipeline
@@ -76,7 +89,6 @@ class HotelDataSet(Dataset):
 class HotelLightningModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_dir: str,
         train_metadata: TrainMetadata,
         exp_config: ExpConfig,
         num_dl_workers: int = 4,
@@ -86,7 +98,6 @@ class HotelLightningModule(pl.LightningDataModule):
     ):
         super().__init__()
         self._train_metadata = train_metadata
-        self._data_dir = data_dir
         self._exp_config = exp_config
         self._num_workers = num_dl_workers
         self._augmentation_pipeline = augmentation_pipeline
@@ -96,14 +107,16 @@ class HotelLightningModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None) -> None:
         md = self._train_metadata
         self._train_ds = HotelDataSet(
-            md.train_imgs,
+            list_index(md.images, md.train_idxs),
+            list_index(md.txt_labels, md.train_idxs),
             md.label_encoder,
             mask_positions=md.mask_positions,
             augmentation_pipeline=self._augmentation_pipeline,
             image_transforms=self._transform,
         )
         self._val_ds = HotelDataSet(
-            md.val_imgs,
+            list_index(md.images, md.val_idxs),
+            list_index(md.txt_labels, md.val_idxs),
             md.label_encoder,
             mask_positions=md.mask_positions,
             augmentation_pipeline=self._val_augmentation_pipeline,

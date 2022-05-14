@@ -1,0 +1,15 @@
+base:
+  # model_type: tf_efficientnetv2_s_in21k
+  model_type: tf_efficientnetv2_m_in21k
+  num_epochs: 20
+  optimizer: AdamW
+  learning_rate: 1.0e-02
+  weight_decay: 1.0e-06
+  batch_size: 16
+  augmentation_preset: happy_whale_4th
+  gradient_accumulation: 16
+  extra_model_params:
+    drop_rate: 0.25
+deltas:
+  - augmentation_preset: flip_rot
+  - augmentation_preset: default

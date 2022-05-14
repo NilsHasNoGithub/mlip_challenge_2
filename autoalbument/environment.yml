@@ -5,14 +5,13 @@ channels:
   - conda-forge
 dependencies:
   - python=3.7
-  - matplotlib
-  - ipykernel
-  - ipywidgets
-  - numpy
-  - scikit-learn
-  - albumentations
-  - pillow
-  - scipy
+  # - matplotlib
+  # - ipykernel
+  # - ipywidgets
+  # - numpy
+  # - scikit-learn
+  # - pillow
+  # - scipy
   - pip
   - pip:
     - kaggle
@@ -33,7 +32,9 @@ dependencies:
     - 'git+https://github.com/NilsHasNoGithub/nils-utils.git'
     - icecream
     - autoalbument
-    - '--extra-index-url https://download.pytorch.org/whl/cu113'
-    - torch
-    - torchvision
-    - torchaudio
+    - '-f https://download.pytorch.org/whl/lts/1.8/torch_lts.html'
+    - torch==1.9+cu111
+    # - torchvision==0.9.2+cu111
+    # - torchaudio==0.8.2
+    # - torchtext==0.8.1
+    # - albumentations

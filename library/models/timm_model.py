@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, Optional
 import pytorch_lightning as pl
 import timm
@@ -5,6 +6,7 @@ import timm.optim
 import torch.optim
 import torch
 from torch.nn import functional as F
+import torch.nn as nn
 from sklearn.metrics import accuracy_score
 
 from timm.data import resolve_data_config
@@ -22,7 +24,10 @@ class TimmModule(pl.LightningModule):
         learning_rate: float,
         weight_decay: float,
         extra_model_params: Optional[Dict[str, Any]] = None,
+        pretrained_timm_model: Optional[str] = None,
         pretrained=True,
+        head_drop_rate: float = 0.25,
+        label_smoothing: float = 0.1,
     ) -> None:
         super().__init__()
 
@@ -35,14 +40,22 @@ class TimmModule(pl.LightningModule):
             extra_model_params if extra_model_params is not None else dict()
         )
 
-        self.model = timm.create_model(
-            self._model_name,
-            pretrained=pretrained,
-            num_classes=self._n_classes,
-            **self._extra_model_params
+        if pretrained_timm_model is not None:
+            self.model = torch.load(pretrained_timm_model)
+        else:
+            self.model = timm.create_model(
+                self._model_name,
+                pretrained=pretrained,
+                num_classes=0,
+                **self._extra_model_params
+            )
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=head_drop_rate),
+            nn.Linear(self.model.num_features, self._n_classes),
         )
 
-        self.loss_fn = F.cross_entropy
+        self.loss_fn = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
 
         self.save_hyperparameters()
 
@@ -52,8 +65,13 @@ class TimmModule(pl.LightningModule):
 
         return transform
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward_features(self, x: torch.Tensor):
         return self.model(x)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.model(x)
+        x = self.classifier(x)
+        return x
 
     def training_step(self, batch, *_) -> Dict:
 
@@ -63,6 +81,7 @@ class TimmModule(pl.LightningModule):
 
         loss = self.loss_fn(predictions, labels)
         self.log("loss", loss)
+
         return {"loss": loss}
 
     def validation_step(self, batch, *_) -> Dict:
@@ -99,8 +118,6 @@ class TimmModule(pl.LightningModule):
         #         for j in range(top_5.shape[1]):
         #             f.write(f"{top_5[i, j]} ")
         #         f.write("\n")
-                
-
 
     def configure_optimizers(self):
 
@@ -110,5 +127,7 @@ class TimmModule(pl.LightningModule):
             lr=self._learning_rate,
             weight_decay=self._weight_decay,
         )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 10)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, 10, eta_min=self._learning_rate * 1e-2
+        )
         return [optimizer], [scheduler]

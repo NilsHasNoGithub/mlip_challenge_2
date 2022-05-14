@@ -33,16 +33,20 @@ class MaskPos:
 class TrainMetadata:
     label_encoder: Dict[str, int]
     label_decoder: Dict[int, str]
-    train_imgs: List[str]
-    val_imgs: List[str]
+    images: List[str]
+    txt_labels: List[str]
+    train_idxs: List[str]
+    val_idxs: List[str]
     mask_positions: List[MaskPos]
 
     def to_yaml(self, file_path) -> None:
         metadata = {
             "label_encoder": self.label_encoder,
             "label_decoder": self.label_decoder,
-            "train_imgs": self.train_imgs,
-            "val_imgs": self.val_imgs,
+            "images": self.images,
+            "txt_labels": self.txt_labels,
+            "train_idxs": self.train_idxs,
+            "val_idxs": self.val_idxs,
             "mask_positions": [mp._values() for mp in self.mask_positions],
         }
 
@@ -54,13 +58,15 @@ class TrainMetadata:
 
         with open(yaml_file, "r") as f:
 
-            metadata = yaml.load(f, Loader=yaml.FullLoader)
+            metadata = yaml.load(f, Loader=yaml.CLoader)
 
         return TrainMetadata(
             label_encoder=metadata["label_encoder"],
             label_decoder=metadata["label_decoder"],
-            train_imgs=metadata["train_imgs"],
-            val_imgs=metadata["val_imgs"],
+            images=metadata["images"],
+            txt_labels=metadata["txt_labels"],
+            train_idxs=metadata["train_idxs"],
+            val_idxs=metadata["val_idxs"],
             mask_positions=[MaskPos(*vs) for vs in metadata["mask_positions"]],
         )
 
@@ -79,6 +85,7 @@ class ExpConfig:
     val_augmentation_preset: str = "default"
     gradient_accumulation: int = 1
     extra_model_params: Optional[Dict] = None
+    pretrained_timm_model: Optional[str] = None
 
 
 @load_from_yaml

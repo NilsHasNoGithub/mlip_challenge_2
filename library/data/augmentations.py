@@ -6,8 +6,8 @@ DEFAULT = [
     A.LongestMaxSize(512),
     A.PadIfNeeded(512, 512),
     A.RandomCrop(456, 456),
+    A.HorizontalFlip(),
     A.RandomRotate90(),
-    A.Flip(),
     A.Transpose(),
     A.OneOf(
         [
@@ -28,8 +28,6 @@ DEFAULT = [
         scale_limit=0.2,
         rotate_limit=45,
         p=0.2,
-        border_mode=cv2.BORDER_CONSTANT,
-        value=(255, 0, 0),
     ),
     A.OneOf(
         [
@@ -62,6 +60,32 @@ DEFAULT = [
 ]
 
 
-PRESETS = {"default": A.Compose(DEFAULT), "no_aug": A.Compose(DEFAULT[:2]), "flip_rot": A.Compose(DEFAULT[:5])}
+PRESETS = {
+    "default": A.Compose(DEFAULT),
+    "no_aug": A.Compose(DEFAULT[:2]),
+    "flip_rot": A.Compose(DEFAULT[:5]),
+    "happy_whale_4th": A.Compose(
+        DEFAULT[:5]
+        + [
+            A.RandomContrast(p=0.75),
+            A.ShiftScaleRotate(
+                shift_limit=0.0, scale_limit=0.3, rotate_limit=10, p=0.7
+            ),
+            A.HueSaturationValue(
+                hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.5
+            ),
+        ]
+    ),
+    "fgvc8_winner": A.Compose(
+        [
+            A.RandomResizedCrop(512, 512),
+            A.HorizontalFlip(),
+            A.RandomBrightness(),
+            A.RandomContrast(),
+            A.RandomGamma(),
+            A.ShiftScaleRotate(),
+        ]
+    ),
+}
 
 VAL_PRESETS = {"default": A.Compose(DEFAULT[:2])}

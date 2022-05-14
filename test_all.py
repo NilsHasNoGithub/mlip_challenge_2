@@ -6,15 +6,23 @@ import random
 import os
 from library.config import TrainMetadata
 from library.data import dataset
-import cv2
+from library.layers.pooling import GlobalAveragePool2D
+import torch
 
 TRAIN_METADATA_FILE = "data/train_metadata.yml"
+
+
+def test_ga_pool():
+    i = torch.randn((2, 3, 4, 5))
+    assert tuple(GlobalAveragePool2D()(i).shape) == (2, 3)
+    assert tuple(GlobalAveragePool2D(start_dim=1, end_dim=2)(i).shape) == (2, 5)
+    assert tuple(GlobalAveragePool2D(start_dim=-3, end_dim=-2)(i).shape) == (2, 5)
 
 
 # def test_dataset():
 #     train_metadata = TrainMetadata.from_yaml(TRAIN_METADATA_FILE)
 #     ds = dataset.HotelDataSet(
-#         train_metadata.train_imgs,
+#         train_metadata.images[train_metadata.train_idxs],
 #         train_metadata.label_encoder,
 #         augmentation_pipeline=None,
 #         mask_positions=train_metadata.mask_positions,
