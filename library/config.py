@@ -85,6 +85,7 @@ class ExpConfig:
     val_augmentation_preset: str = "default"
     gradient_accumulation: int = 1
     extra_model_params: Optional[Dict] = None
+    pretrained_timm_model: Optional[str] = None
 
 
 @load_from_yaml

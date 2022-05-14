@@ -62,7 +62,12 @@ def extr_mask_position(mask_path: str) -> MaskPos:
     return MaskPos(left, top, right - left, bottom - top)
 
 
-def process_ds_folder(folder: str, hotels_50k: bool, min_sample_limit: int, max_sample_limit: Union[int, float]) -> DsResults:
+def process_ds_folder(
+    folder: str,
+    hotels_50k: bool,
+    min_sample_limit: int,
+    max_sample_limit: Union[int, float],
+) -> DsResults:
     all_imgs = utils.get_train_img_paths(
         os.path.join(folder, "train_images") if not hotels_50k else folder
     )
@@ -72,10 +77,13 @@ def process_ds_folder(folder: str, hotels_50k: bool, min_sample_limit: int, max_
     for l in labels:
         label_counts[l] += 1
 
-    remaining_idxs = [i for i, l in enumerate(labels) if min_sample_limit <= label_counts[l] <= max_sample_limit]
+    remaining_idxs = [
+        i
+        for i, l in enumerate(labels)
+        if min_sample_limit <= label_counts[l] <= max_sample_limit
+    ]
     all_imgs = utils.list_index(all_imgs, remaining_idxs)
     labels = utils.list_index(labels, remaining_idxs)
-
 
     label_encoder, label_decoder = utils.make_label_map(labels)
     cls_counts = utils.class_counts(labels)
@@ -137,7 +145,9 @@ def main(
         os.path.join(data_folder, "train_masks") if mask_folder is None else mask_folder
     )
 
-    ds_results = process_ds_folder(data_folder, hotels_50k, min_sample_limit, max_sample_limit)
+    ds_results = process_ds_folder(
+        data_folder, hotels_50k, min_sample_limit, max_sample_limit
+    )
 
     mask_positions = Parallel(n_jobs=-1)(
         delayed(extr_mask_position)(m) for m in tqdm(all_mask_imgs)

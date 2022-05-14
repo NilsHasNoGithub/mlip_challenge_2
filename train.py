@@ -16,6 +16,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import multiprocessing
 import random
 from icecream import ic
+import warnings
 
 
 # def random_str(l=10) ->
@@ -54,6 +55,7 @@ def main(
     multi_gpu: bool,
     gpu: List[int],
 ):
+    warnings.simplefilter(action="ignore", category=FutureWarning)
     train_metadata = TrainMetadata.from_yaml(train_metadata)
     exp_configs: List[ExpConfig] = ExpConfig.from_multi_conf_yaml_file(experiment_conf)
 
@@ -143,7 +145,7 @@ def main(
             # ),
             # strategy="ddp_sharded",
             # strategy="ddp_fully_sharded" if multi_gpu else None,
-            auto_select_gpus=True,
+            # auto_select_gpus=True,
             accumulate_grad_batches=exp_config.gradient_accumulation,
         )
         # trainer = pl.Trainer(logger=logger, gpus=[2])

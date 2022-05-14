@@ -39,7 +39,9 @@ class HotelDataSet(Dataset):
         self._txt_labels = txt_labels
         self._mask_positions = mask_positions
 
-        assert mask_positions is None or len(mask_positions) > 0, "mask positions can not be empty"
+        assert (
+            mask_positions is None or len(mask_positions) > 0
+        ), "mask positions can not be empty"
 
         self._include_file_name = include_file_name
         self._is_eval = is_eval

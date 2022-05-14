@@ -76,6 +76,16 @@ PRESETS = {
             ),
         ]
     ),
+    "fgvc8_winner": A.Compose(
+        [
+            A.RandomResizedCrop(512, 512),
+            A.HorizontalFlip(),
+            A.RandomBrightness(),
+            A.RandomContrast(),
+            A.RandomGamma(),
+            A.ShiftScaleRotate(),
+        ]
+    ),
 }
 
 VAL_PRESETS = {"default": A.Compose(DEFAULT[:2])}

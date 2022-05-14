@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, Optional
 import pytorch_lightning as pl
 import timm
@@ -23,8 +24,10 @@ class TimmModule(pl.LightningModule):
         learning_rate: float,
         weight_decay: float,
         extra_model_params: Optional[Dict[str, Any]] = None,
+        pretrained_timm_model: Optional[str] = None,
         pretrained=True,
         head_drop_rate: float = 0.25,
+        label_smoothing: float = 0.1,
     ) -> None:
         super().__init__()
 
@@ -37,19 +40,22 @@ class TimmModule(pl.LightningModule):
             extra_model_params if extra_model_params is not None else dict()
         )
 
-        self.model = timm.create_model(
-            self._model_name,
-            pretrained=pretrained,
-            num_classes=0,
-            **self._extra_model_params
-        )
+        if pretrained_timm_model is not None:
+            self.model = torch.load(pretrained_timm_model)
+        else:
+            self.model = timm.create_model(
+                self._model_name,
+                pretrained=pretrained,
+                num_classes=0,
+                **self._extra_model_params
+            )
 
         self.classifier = nn.Sequential(
             nn.Dropout(p=head_drop_rate),
             nn.Linear(self.model.num_features, self._n_classes),
         )
 
-        self.loss_fn = F.cross_entropy
+        self.loss_fn = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
 
         self.save_hyperparameters()
 
