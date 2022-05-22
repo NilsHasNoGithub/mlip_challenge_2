@@ -25,7 +25,7 @@ dependencies:
   - py-xgboost
   - h2o
   - pip:
-    - kaggle
+    - kaggle==1.5.12
     - deepspeed
     - tqdm
     - ray

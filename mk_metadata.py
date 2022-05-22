@@ -1,7 +1,9 @@
 from collections import defaultdict
+import copy
 from email.policy import default
 from genericpath import exists
 import math
+import random
 from typing import Dict, List, Optional, Union
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -62,6 +64,12 @@ def extr_mask_position(mask_path: str) -> MaskPos:
     return MaskPos(left, top, right - left, bottom - top)
 
 
+def shuffled(l: list) -> list:
+    l = copy.deepcopy(l)
+    random.shuffle(l)
+    return l
+
+
 def process_ds_folder(
     folder: str,
     hotels_50k: bool,
@@ -77,11 +85,25 @@ def process_ds_folder(
     for l in labels:
         label_counts[l] += 1
 
-    remaining_idxs = [
+    correct_amount_idxs = [
         i
         for i, l in enumerate(labels)
         if min_sample_limit <= label_counts[l] <= max_sample_limit
     ]
+    sampled_idxs_per_label = defaultdict(list)
+
+    for i, l in shuffled(
+        [(i, l) for i, l in enumerate(labels) if label_counts[l] > max_sample_limit]
+    ):
+        if len(sampled_idxs_per_label[l]) < max_sample_limit:
+            sampled_idxs_per_label[l].append(i)
+
+    sampled_idxs = []
+    for idxs in sampled_idxs_per_label.values():
+        assert len(idxs) <= max_sample_limit
+        sampled_idxs.extend(idxs)
+
+    remaining_idxs = correct_amount_idxs + sampled_idxs
     all_imgs = utils.list_index(all_imgs, remaining_idxs)
     labels = utils.list_index(labels, remaining_idxs)
 
@@ -130,7 +152,7 @@ def process_ds_folder(
 @click.option(
     "--max-sample-limit",
     type=int,
-    default=math.inf,
+    default=None,
     help="Maximal amount of samples of a class for it to be included",
 )
 def main(
@@ -139,8 +161,11 @@ def main(
     mask_folder: Optional[str],
     output_file,
     min_sample_limit: int,
-    max_sample_limit: Union[int, float],
+    max_sample_limit: Optional[int],
 ):
+    if max_sample_limit is None:
+        max_sample_limit = math.inf
+
     all_mask_imgs = utils.get_mask_img_paths(
         os.path.join(data_folder, "train_masks") if mask_folder is None else mask_folder
     )
@@ -163,6 +188,9 @@ def main(
         mask_positions,
     )
 
+    print(
+        f"Created metadata with: {len(metadata.images)} samples, with {len(ds_results.label_decoder)} unique classes"
+    )
     metadata.to_yaml(output_file)
 
 

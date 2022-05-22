@@ -97,6 +97,8 @@ def main(
             learning_rate=exp_config.learning_rate,
             weight_decay=exp_config.weight_decay,
             extra_model_params=exp_config.extra_model_params,
+            pretrained_timm_model=exp_config.pretrained_timm_model,
+            use_arcface_loss=exp_config.use_arcface_loss,
         )
 
         transform = ic(model.get_transform())

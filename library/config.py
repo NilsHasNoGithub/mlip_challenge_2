@@ -78,7 +78,7 @@ class ExpConfig:
     experiment_name: str = "Default"
     num_epochs: int = 100
     batch_size: int = 32
-    optimizer: str = "sgf"
+    optimizer: str = "AdamW"
     learning_rate: float = 0.001
     weight_decay: float = 0.0
     augmentation_preset: str = "default"  # see library.data.augmentations
@@ -86,6 +86,7 @@ class ExpConfig:
     gradient_accumulation: int = 1
     extra_model_params: Optional[Dict] = None
     pretrained_timm_model: Optional[str] = None
+    use_arcface_loss: bool = True
 
 
 @load_from_yaml
@@ -94,3 +95,11 @@ class InferenceConfig:
     model_path: str
     val_augmentation_preset: str = "default"
     batch_size: int = 16
+    embedding_based: bool = False
+
+
+@load_from_yaml
+@dataclass
+class MetaExpConfig:
+    experiment_name: str = "MetaLearn"
+    n_folds: int = 5

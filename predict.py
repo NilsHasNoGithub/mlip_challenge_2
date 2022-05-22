@@ -18,6 +18,7 @@ import pandas as pd
 from tqdm import tqdm
 from icecream import ic
 import pickle
+import itertools
 
 
 def make_predictions(
@@ -31,52 +32,86 @@ def make_predictions(
     config: InferenceConfig = InferenceConfig.from_yaml_file(inference_config_file)
     train_metadata = TrainMetadata.from_yaml(train_metadata_file)
 
-    model = TimmModule.load_from_checkpoint(config.model_path, pretrained=False)
-    # model: TimmModule = torch.load(config.model_path)
-    # with open(config.model_path, "rb") as f:
-    #     model = pickle.load(f)
+    model = TimmModule.load_from_checkpoint(
+        config.model_path,
+        pretrained=False,
+        pretrained_timm_model=None,
+        for_inference=True,
+    )
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.eval()
+    model: TimmModule = model.to(device)
 
     img_paths = glob.glob(os.path.join(test_dir, "**/*.jpg"), recursive=True)
-    # print(img_paths)
 
-    dataset = HotelDataSet(
+    test_dataset = HotelDataSet(
         img_paths,
-        # train_metadata.images[train_metadata.val_idxs],
-        train_metadata.label_encoder,
+        None,
+        None,
         augmentation_pipeline=augmentations.VAL_PRESETS[config.val_augmentation_preset],
         image_transforms=model.get_transform(),
         is_eval=True,
         include_file_name=True,
     )
 
-    if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    if config.embedding_based:
+        train_dataset = HotelDataSet(
+            train_metadata.images,
+            train_metadata.txt_labels,
+            train_metadata.label_encoder,
+            augmentation_pipeline=augmentations.VAL_PRESETS[
+                config.val_augmentation_preset
+            ],
+            image_transforms=model.get_transform(),
+        )
 
-    model = model.eval()
-    model = model.to(device)
+        model.create_embeddings(
+            DataLoader(
+                train_dataset, batch_size=config.batch_size, num_workers=num_workers
+            )
+        )
 
     result = defaultdict(list)
     # labels = []
     # all_preds = []
 
+    if config.embedding_based:
+        embedding_db = model.embedding_db()
+        lbl_db = model.label_db()
+
     for inputs, lbl, paths in tqdm(
-        DataLoader(dataset, batch_size=config.batch_size, num_workers=num_workers)
+        DataLoader(test_dataset, batch_size=config.batch_size, num_workers=num_workers)
     ):
         inputs = inputs.to(device)
-        predictions = model.forward(inputs)
 
-        for i in range(predictions.shape[0]):
-            top_5 = torch.topk(predictions[i, :], 5, largest=True).indices.cpu()
-            # top_5_np = np.argsort(predictions[i, :].cpu().detach().numpy())[-5:][::-1]
-            # print(predictions[i, :][top_5])
-            result["image_id"].append(paths[i])
-            top_5_hotel_ids = []
-            for j in range(top_5.shape[0]):
-                top_5_hotel_ids.append(train_metadata.label_decoder[top_5[j].item()])
+        if config.embedding_based:
+            top_ks = model.predict_based_on_embedding(
+                inputs, embedding_db=embedding_db, lbl_db=lbl_db
+            )
 
-            result["hotel_id"].append(" ".join(top_5_hotel_ids))
-            # all_preds.append(predictions[i, :].detach().cpu())
-            # labels.append(lbl[i].detach().cpu())
+            for i, top_5 in enumerate(top_ks):
+                result["image_id"].append(paths[i])
+
+                top_5_hotel_ids = []
+                for j in range(len(top_5)):
+                    top_5_hotel_ids.append(train_metadata.label_decoder[top_5[j]])
+
+                result["hotel_id"].append(" ".join(top_5_hotel_ids))
+
+        else:
+            predictions = model.forward(inputs)
+            for i in range(predictions.shape[0]):
+                top_5 = torch.topk(predictions[i, :], 5, largest=True).indices.cpu()
+                # print(predictions[i, :][top_5])
+                result["image_id"].append(paths[i])
+                top_5_hotel_ids = []
+                for j in range(top_5.shape[0]):
+                    top_5_hotel_ids.append(
+                        train_metadata.label_decoder[top_5[j].item()]
+                    )
+
+                result["hotel_id"].append(" ".join(top_5_hotel_ids))
 
     # all_preds = torch.stack(all_preds)
     # labels = torch.stack(labels)

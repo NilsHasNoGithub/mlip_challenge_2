@@ -50,7 +50,7 @@ class HotelDataSet(Dataset):
         self._labels = (
             [label_encoder[l] for l in self._txt_labels]
             if not is_eval
-            else [0 for _ in self._txt_labels]
+            else [0 for _ in self._img_paths]
         )
 
         self._augmentation_pipeline = (

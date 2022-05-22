@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from icecream import ic
 
+# margin=0.3, scale=30,
+
 
 class AngularPenaltySMLoss(nn.Module):
     def __init__(
@@ -85,7 +87,7 @@ class AngularPenaltySMLoss(nn.Module):
         )
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
         L = numerator - torch.log(denominator)
-        return -torch.mean(L)
+        return wf, -torch.mean(L)
 
     def predict(self, x: torch.Tensor) -> torch.Tensor:
         """

@@ -88,4 +88,4 @@ PRESETS = {
     ),
 }
 
-VAL_PRESETS = {"default": A.Compose(DEFAULT[:2])}
+VAL_PRESETS = {"default": A.Compose(DEFAULT[:2]), "none": A.Compose([])}

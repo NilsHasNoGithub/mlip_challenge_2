@@ -6,11 +6,11 @@ base:
   learning_rate: 1.0e-03
   weight_decay: 1.0e-06
   batch_size: 16
-  augmentation_preset: fgvc8_winner
+  augmentation_preset: happy_whale_4th
   gradient_accumulation: 16
   extra_model_params:
     drop_rate: 0.25
 deltas:
-  - augmentation_preset: happy_whale_4th
+  - augmentation_preset: fgvc8_winner
   - augmentation_preset: flip_rot
   - augmentation_preset: default
