@@ -253,13 +253,13 @@ class TimmModule(pl.LightningModule):
             labels.append(output["ground_truth"])
             val_losses.append(output["val_loss"])
 
+        predictions = torch.cat(predictions, dim=0)
+        labels = torch.cat(labels, dim=0)
+
         if self._use_arcface_loss:
             val_loss = np.mean([v.item() for v in val_losses])
         else:
             val_loss = self.loss_fn(predictions, labels)
-
-        predictions = torch.cat(predictions, dim=0)
-        labels = torch.cat(labels, dim=0)
 
         val_acc = accuracy_score(
             labels.cpu().numpy(), predictions.argmax(dim=1).cpu().numpy()
