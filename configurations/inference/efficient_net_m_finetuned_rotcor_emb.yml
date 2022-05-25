@@ -1,0 +1,6 @@
+model_path: 'models/effnet5.ckpt'
+batch_size: 4
+val_augmentation_preset: default
+embedding_based: True
+rot_model_ckpt: 'rotation_model/checkpoint.ckpt'
+embedding_rot_cor: True

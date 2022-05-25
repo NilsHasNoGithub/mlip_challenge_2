@@ -39,8 +39,12 @@ from h2o.automl import H2OAutoML
     "--num-threads", "-j", default=-1, type=int, help="number of threads for h2o to use"
 )
 @click.option("--runtime-mins", "-r", default=5 * 24 * 60, type=int)  # default 5 days
-@click.option("--max-mem-size", default=None, type=str, help="Maximum h2o cluster memory")
-@click.option("--min-mem-size", default=None, type=str, help="Minimum h2o cluster memory")
+@click.option(
+    "--max-mem-size", default=None, type=str, help="Maximum h2o cluster memory"
+)
+@click.option(
+    "--min-mem-size", default=None, type=str, help="Minimum h2o cluster memory"
+)
 def main(
     data_folder: str,
     train_config: str,

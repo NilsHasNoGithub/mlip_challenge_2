@@ -135,3 +135,4 @@ dmypy.json
 /mlruns
 /models
 /kaggle_data
+.nobackup

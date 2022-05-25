@@ -80,3 +80,11 @@ def read_img(img_path: str) -> np.ndarray:
 
 def list_index(l: list, idxs: Iterable) -> list:
     return [l[i] for i in idxs]
+
+
+def read_img_rot(img_path: str, rotation: int) -> np.ndarray:
+    img = np.array(
+        pil_image.open(img_path).convert("RGB").rotate(rotation * 90, expand=True)
+    )
+
+    return img

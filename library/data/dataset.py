@@ -15,7 +15,8 @@ from torchvision import transforms
 from torch.utils.data.dataloader import DataLoader
 from PIL import Image as pil_img
 import warnings
-
+from ..models import _legacy_timm_model
+from ..inference_utils import correct_img_rotation
 
 class HotelDataSet(Dataset):
     def __init__(
@@ -31,6 +32,7 @@ class HotelDataSet(Dataset):
         include_file_name: bool = False,
         is_eval: bool = False,
         is_hotels_50k: bool = False,
+        rot_model_ckpt: Optional[str] = None,
     ) -> None:
         super().__init__()
 
@@ -62,6 +64,14 @@ class HotelDataSet(Dataset):
             image_transforms if image_transforms is not None else transforms.Compose([])
         )
 
+        self._rot_model = (
+            _legacy_timm_model.TimmModule.load_from_checkpoint(
+                rot_model_ckpt, pretrained=False, for_inference=True
+            ).cpu().eval()
+            if rot_model_ckpt is not None
+            else None
+        )
+
     def __len__(self) -> int:
         return len(self._img_paths)
 
@@ -70,6 +80,9 @@ class HotelDataSet(Dataset):
         lbl = self._labels[index]
 
         img = read_img(img_path)
+
+        if self._rot_model is not None:
+            img = correct_img_rotation(self._rot_model, img)
 
         # TODO apply data augmentation (before mask)
         img = self._augmentation_pipeline(image=img)["image"]

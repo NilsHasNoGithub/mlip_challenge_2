@@ -53,6 +53,7 @@ def make_predictions(
         image_transforms=model.get_transform(),
         is_eval=True,
         include_file_name=True,
+        rot_model_ckpt=config.rot_model_ckpt,
     )
 
     if config.embedding_based:
@@ -64,6 +65,7 @@ def make_predictions(
                 config.val_augmentation_preset
             ],
             image_transforms=model.get_transform(),
+            rot_model_ckpt=config.rot_model_ckpt if config.embedding_rot_cor else None,
         )
 
         model.create_embeddings(

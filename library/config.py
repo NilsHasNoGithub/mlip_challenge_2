@@ -96,6 +96,8 @@ class InferenceConfig:
     val_augmentation_preset: str = "default"
     batch_size: int = 16
     embedding_based: bool = False
+    rot_model_ckpt: Optional[str] = None
+    embedding_rot_cor: bool = False
 
 
 @load_from_yaml
