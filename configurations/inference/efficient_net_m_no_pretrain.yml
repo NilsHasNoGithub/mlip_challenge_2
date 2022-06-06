@@ -1,0 +1,4 @@
+model_path: 'models/effnet_no_pretrain.ckpt'
+batch_size: 4
+val_augmentation_preset: default
+embedding_based: true
