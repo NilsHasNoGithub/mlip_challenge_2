@@ -86,7 +86,7 @@ class ExpConfig:
     gradient_accumulation: int = 1
     extra_model_params: Optional[Dict] = None
     pretrained_timm_model: Optional[str] = None
-    use_arcface_loss: bool = True
+    use_arcface_loss: bool = False
 
 
 @load_from_yaml

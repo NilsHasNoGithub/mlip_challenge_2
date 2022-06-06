@@ -1,4 +1,4 @@
-model_path: 'models/effnet5.ckpt'
+model_path: 'models/effnet_best.ckpt'
 batch_size: 4
 val_augmentation_preset: default
 embedding_based: true
