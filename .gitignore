@@ -136,3 +136,4 @@ dmypy.json
 /models
 /kaggle_data
 .nobackup
+/rotation_model
